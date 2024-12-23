@@ -8,7 +8,9 @@
   <a href="Contact">Contact聯絡我</a>
 </h4>
 
-<img src="screenshot/.png" width="300" class="center" />
+<img src="screenshots/blcokno1.png" width="500"/> <img src="screenshots/starkscan1.png" width="420"/>
+
+
 
 📖 installation see [scaffold-stark-2](https://github.com/Scaffold-Stark/scaffold-stark-2)
 
@@ -21,7 +23,26 @@
 
   
 # Demo
-  [Youtube]()
+  + [Youtube]()
+  + 實際運行畫面 Screenshots
+
+    <img src="screenshots/StarkFair.png" width="300"/><img src="screenshots/lottery1.png" width="300"/><img src="screenshots/lottery2.png" width="300"/>
+  
+  + 原理簡介：已知區塊鏈的出塊速度無法確定，利用此特性，導入至中獎因子，實現隨機達成公平。
+  至網頁>檢查>本智能合約設計時考慮過網站被前端攻擊，即使被攻擊也不會影響失去公平，因為出塊數的設計。
+  
+    <img src="screenshots/blcokno1.png" width="300"/>
+    <img src="screenshots/blockno2.png" width="300"/>
+
+
+  + 佈署合約成功(以sepolia測試網為例)
+  
+    <img src="screenshots/deploy_network1.png" width="700"/>
+  
+  + 可至starkscan查詢
+
+    <img src="screenshots/starkscan1.png" width="300"/>
+
 # Contact
   [k66](https://k66.ninja)
 
