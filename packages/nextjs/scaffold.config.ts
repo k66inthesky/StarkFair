@@ -8,16 +8,10 @@ export type ScaffoldConfig = {
   rpcProviderUrl: string;
   walletAutoConnect: boolean;
   autoConnectTTL: number;
-  /**
-   * Flag to indicate if the network is a fork of another network
-   * This is used to handle network validation differently for forked networks
-   * since they share the same chain ID as their parent network
-   */
-  isFork?: boolean;
 };
 
 const scaffoldConfig = {
-  targetNetworks: [chains.devnet],
+  targetNetworks: [chains.sepolia],
   // Only show the Burner Wallet when running on devnet
   onlyLocalBurnerWallet: false,
   rpcProviderUrl: process.env.NEXT_PUBLIC_PROVIDER_URL || "",
@@ -31,12 +25,6 @@ const scaffoldConfig = {
    */
   autoConnectTTL: 60000,
   walletAutoConnect: true,
-  /**
-   * Set to true when using a fork of a network
-   * This will prevent showing the wrong network dropdown when the chainId matches
-   * but the RPC URL is different (e.g., when using a local fork of mainnet)
-   */
-  isFork: false,
 } as const satisfies ScaffoldConfig;
 
 export default scaffoldConfig;

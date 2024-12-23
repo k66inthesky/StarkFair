@@ -1,9 +1,7 @@
-"use client";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-stark";
 import { ContractName } from "~~/utils/scaffold-stark/contract";
-import { Contract, Abi } from "starknet";
-import { useProvider, useAccount } from "@starknet-react/core";
-import { useMemo } from "react";
+import { Contract } from "starknet";
+import { useProvider } from "@starknet-react/core";
 
 export const useScaffoldContract = <TContractName extends ContractName>({
   contractName,
@@ -12,34 +10,15 @@ export const useScaffoldContract = <TContractName extends ContractName>({
 }) => {
   const { data: deployedContractData, isLoading: deployedContractLoading } =
     useDeployedContractInfo(contractName);
-
   const { provider: publicClient } = useProvider();
-  const { account } = useAccount();
-
-  const contract = useMemo(() => {
-    if (!deployedContractData) return undefined;
-
-    const contractInstance = new Contract(
-      deployedContractData.abi as Abi,
+  let contract = undefined;
+  if (deployedContractData) {
+    contract = new Contract(
+      [...deployedContractData.abi],
       deployedContractData.address,
       publicClient,
     );
-
-    if (account) {
-      contractInstance.connect(account);
-    }
-
-    const originalCall = contractInstance.call.bind(contractInstance);
-    contractInstance.call = async (method: string, ...args: any[]) => {
-      try {
-        return await originalCall(method, ...args, { parseResponse: false });
-      } catch (error) {
-        return originalCall(method, ...args);
-      }
-    };
-
-    return contractInstance;
-  }, [deployedContractData, publicClient, account]);
+  }
 
   return {
     data: contract,

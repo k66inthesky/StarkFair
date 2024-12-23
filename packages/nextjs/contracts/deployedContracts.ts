@@ -3,6 +3,133 @@
  * You should not edit it manually or your changes might be overwritten.
  */
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  devnet: {
+    YourContract: {
+      address:
+        "0x66513b4aa5123569ac9494c02ced0ca408d823a55e77ed214590baf5f9b5f45",
+      abi: [
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [],
+        },
+        {
+          type: "function",
+          name: "add_participant",
+          inputs: [
+            {
+              name: "name",
+              type: "core::felt252",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "function",
+          name: "draw_winner",
+          inputs: [
+            {
+              name: "seed",
+              type: "core::integer::u256",
+            },
+          ],
+          outputs: [
+            {
+              type: "core::felt252",
+            },
+          ],
+          state_mutability: "view",
+        },
+        {
+          type: "event",
+          name: "contracts::YourContract::YourContract::Event",
+          kind: "enum",
+          variants: [],
+        },
+      ],
+      classHash:
+        "0x2a2397665260c8b4c2a64e3c852e687b0d2bab55c04c193d31205e49b2ac4a3",
+    },
+  },
+  sepolia: {
+    YourContract: {
+      address:
+        "0x7edae21614b2efb6af34fd7118c1ee2f6f8d0a6327f521e77cc49b3bea7448b",
+      abi: [
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [],
+        },
+        {
+          type: "function",
+          name: "add_participant",
+          inputs: [
+            {
+              name: "name",
+              type: "core::felt252",
+            },
+          ],
+          outputs: [],
+          state_mutability: "external",
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "function",
+          name: "draw_winner",
+          inputs: [
+            {
+              name: "seed",
+              type: "core::integer::u256",
+            },
+          ],
+          outputs: [
+            {
+              type: "core::felt252",
+            },
+          ],
+          state_mutability: "view",
+        },
+        {
+          type: "event",
+          name: "contracts::YourContract::YourContract::Event",
+          kind: "enum",
+          variants: [],
+        },
+      ],
+      classHash:
+        "0x2a2397665260c8b4c2a64e3c852e687b0d2bab55c04c193d31205e49b2ac4a3",
+    },
+  },
+} as const;
 
 export default deployedContracts;

@@ -12,7 +12,6 @@ import { useAccount, useNetwork } from "@starknet-react/core";
 import { Address } from "@starknet-react/chains";
 import { useEffect, useMemo, useState } from "react";
 import ConnectModal from "./ConnectModal";
-import scaffoldConfig from "~~/scaffold.config";
 
 /**
  * Custom Connect Button (watch balance + custom design)
@@ -45,8 +44,8 @@ export const CustomConnectButton = () => {
   }, [account]);
 
   if (status === "disconnected") return <ConnectModal />;
-  // Skip wrong network check if using a fork
-  if (!scaffoldConfig.isFork && accountChainId !== targetNetwork.id) {
+  // TODO : add tag for fork on scaffold config and dont show wrong network dropdown if fork is true
+  if (accountChainId !== targetNetwork.id) {
     return <WrongNetworkDropdown />;
   }
 
