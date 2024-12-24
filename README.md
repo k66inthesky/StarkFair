@@ -12,7 +12,7 @@
 
 
 
-📖 installation see [scaffold-stark-2](https://github.com/Scaffold-Stark/scaffold-stark-2)
+📖 Installation see 安裝教學請見 [scaffold-stark-2](https://github.com/Scaffold-Stark/scaffold-stark-2) or see [My video我的影片](https://youtu.be/Ij6CGBif1h8)
 
 # Introduction
 
@@ -23,7 +23,7 @@
 
   
 # Demo
-  + [Youtube]()
+  + [Youtube](https://youtu.be/Ij6CGBif1h8)
   + 實際運行畫面 Screenshots
 
     <img src="screenshots/StarkFair.png" width="300"/><img src="screenshots/lottery1.png" width="300"/><img src="screenshots/lottery2.png" width="300"/>
