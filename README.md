@@ -1,10 +1,13 @@
 <h1 align="center"> StarkFair - 基於 StarkNet 的出塊的公平抽獎機 </h1>
 
+🎉 此項目獲得StarkNet Scaffold-Stark賽道第三名🥉！
 <h4 align="center"> based on Scaffold-Stark-2 </h4>
 
 <img src="screenshots/blcokno1.png" width="500"/> <img src="screenshots/starkscan1.png" width="420"/>
 
 📖 Installation see 安裝教學請見 [scaffold-stark-2](https://github.com/Scaffold-Stark/scaffold-stark-2) or see [My video我的影片](https://youtu.be/Ij6CGBif1h8)
+
+🎬 Demo see 請見 [StarkNet X TinTinLand](https://www.youtube.com/watch?v=s6ivogCJl3s&list=PLCv99tqIzSwla8xCYNF8vkyVaqhGQ9sq3&index=18)
 
 # Introduction
 
@@ -15,7 +18,6 @@
 
   
 # Demo
-  + [Youtube Demo Video](https://youtu.be/Ij6CGBif1h8)
   + 實際運行畫面 Screenshots
 
     <img src="screenshots/StarkFair.png" width="300"/><img src="screenshots/lottery1.png" width="300"/><img src="screenshots/lottery2.png" width="300"/>
