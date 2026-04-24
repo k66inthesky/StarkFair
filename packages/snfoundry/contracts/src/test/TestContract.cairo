@@ -1,19 +1,22 @@
-use contracts::YourContract::{IYourContractDispatcher, IYourContractDispatcherTrait};
-use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use contracts::YourContract::{IStarkFairDispatcher, IStarkFairDispatcherTrait};
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
-use snforge_std::{CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_caller_address, declare};
+use snforge_std::{
+    CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_caller_address, declare,
+    start_cheat_caller_address, stop_cheat_caller_address,
+};
 use starknet::{ContractAddress, contract_address_const};
 
-// Real contract address deployed on Sepolia
 fn OWNER() -> ContractAddress {
     contract_address_const::<0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918>()
 }
 
-const ETH_CONTRACT_ADDRESS: felt252 =
-    0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7;
+fn ALICE() -> ContractAddress {
+    contract_address_const::<'ALICE'>()
+}
 
-fn deploy_contract(name: ByteArray) -> ContractAddress {
-    let contract_class = declare(name).unwrap().contract_class();
+fn deploy_contract() -> ContractAddress {
+    let contract_class = declare("YourContract").unwrap().contract_class();
     let mut calldata = array![];
     calldata.append_serde(OWNER());
     let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
@@ -21,41 +24,112 @@ fn deploy_contract(name: ByteArray) -> ContractAddress {
 }
 
 #[test]
-fn test_set_greetings() {
-    let contract_address = deploy_contract("YourContract");
-
-    let dispatcher = IYourContractDispatcher { contract_address };
-
-    let current_greeting = dispatcher.greeting();
-    let expected_greeting: ByteArray = "Building Unstoppable Apps!!!";
-    assert(current_greeting == expected_greeting, 'Should have the right message');
-
-    let new_greeting: ByteArray = "Learn Scaffold-Stark 2! :)";
-    dispatcher.set_greeting(new_greeting.clone(), 0); // we transfer 0 eth
-    assert(dispatcher.greeting() == new_greeting, 'Should allow set new message');
+fn test_owner_is_set() {
+    let address = deploy_contract();
+    let ownable = IOwnableDispatcher { contract_address: address };
+    assert(ownable.owner() == OWNER(), 'Owner mismatch');
 }
 
 #[test]
-#[fork("SEPOLIA_LATEST")]
-fn test_transfer() {
-    let user = OWNER();
-    let eth_contract_address = contract_address_const::<ETH_CONTRACT_ADDRESS>();
-    let your_contract_address = deploy_contract("YourContract");
+fn test_add_participants_and_count() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
 
-    let your_contract_dispatcher = IYourContractDispatcher {
-        contract_address: your_contract_address,
-    };
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: eth_contract_address };
-    let amount_to_transfer = 500;
-    cheat_caller_address(eth_contract_address, user, CheatSpan::TargetCalls(1));
-    erc20_dispatcher.approve(your_contract_address, amount_to_transfer);
-    let approved_amount = erc20_dispatcher.allowance(user, your_contract_address);
-    assert(approved_amount == amount_to_transfer, 'Not the right amount approved');
+    dispatcher.add_participant('alice');
+    dispatcher.add_participant('bob');
+    dispatcher.add_participant('carol');
 
-    let new_greeting: ByteArray = "Learn Scaffold-Stark 2! :)";
-
-    cheat_caller_address(your_contract_address, user, CheatSpan::TargetCalls(1));
-    your_contract_dispatcher.set_greeting(new_greeting.clone(), 500); // we transfer 0 eth
-    assert(your_contract_dispatcher.greeting() == new_greeting, 'Should allow set new message');
+    assert(dispatcher.get_participants_count() == 3, 'Count should be 3');
+    assert(dispatcher.get_participant(0) == 'alice', 'idx0 alice');
+    assert(dispatcher.get_participant(1) == 'bob', 'idx1 bob');
+    assert(dispatcher.get_participant(2) == 'carol', 'idx2 carol');
+    assert(dispatcher.get_status() == 0, 'status open');
 }
 
+#[test]
+#[should_panic(expected: 'Duplicate name')]
+fn test_duplicate_rejected() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant('alice');
+    dispatcher.add_participant('alice');
+}
+
+#[test]
+#[should_panic(expected: 'Name must be non-zero')]
+fn test_empty_name_rejected() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant(0);
+}
+
+#[test]
+#[should_panic(expected: 'Caller is not the owner')]
+fn test_close_requires_owner() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant('alice');
+
+    start_cheat_caller_address(address, ALICE());
+    dispatcher.close_and_commit(5);
+    stop_cheat_caller_address(address);
+}
+
+#[test]
+#[should_panic(expected: 'Delay too short')]
+fn test_delay_floor() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant('alice');
+
+    cheat_caller_address(address, OWNER(), CheatSpan::TargetCalls(1));
+    dispatcher.close_and_commit(1);
+}
+
+#[test]
+#[should_panic(expected: 'Registration not open')]
+fn test_cannot_add_after_close() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant('alice');
+
+    cheat_caller_address(address, OWNER(), CheatSpan::TargetCalls(1));
+    dispatcher.close_and_commit(5);
+
+    dispatcher.add_participant('bob');
+}
+
+#[test]
+#[should_panic(expected: 'Entropy not ready')]
+fn test_draw_before_entropy_ready_fails() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+    dispatcher.add_participant('alice');
+    dispatcher.add_participant('bob');
+
+    cheat_caller_address(address, OWNER(), CheatSpan::TargetCalls(1));
+    dispatcher.close_and_commit(5);
+
+    dispatcher.draw_winner();
+}
+
+#[test]
+fn test_reset_bumps_round() {
+    let address = deploy_contract();
+    let dispatcher = IStarkFairDispatcher { contract_address: address };
+
+    let r0 = dispatcher.get_round_id();
+    dispatcher.add_participant('alice');
+    assert(dispatcher.get_participants_count() == 1, 'count 1');
+
+    cheat_caller_address(address, OWNER(), CheatSpan::TargetCalls(1));
+    dispatcher.reset_round();
+
+    assert(dispatcher.get_round_id() == r0 + 1, 'round bumped');
+    assert(dispatcher.get_participants_count() == 0, 'count cleared');
+    assert(dispatcher.get_status() == 0, 'reopened');
+
+    // Same name should be acceptable in new round.
+    dispatcher.add_participant('alice');
+    assert(dispatcher.get_participants_count() == 1, 'alice re-added');
+}
