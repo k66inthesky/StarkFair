@@ -28,6 +28,41 @@
     <img src="screenshots/blcokno1.png" width="300"/>
     <img src="screenshots/blockno2.png" width="300"/>
 
+# v2 優化 (2026/04)
+
+初版實作有兩個結構性漏洞：
+1. **開獎計算全在前端**：`drawWinner` 只是瀏覽器裡的 `blockNumber % participants.length`，名單也只存在 React state，等於沒上鏈。任何人打開 DevTools 都能改名單或改邏輯。
+2. **合約 `draw_winner(seed)` 讓呼叫者自選 seed**：即使走合約，呼叫者也能反覆試 seed 直到中意的結果。
+
+v2 改用 OpenZeppelin Cairo (`openzeppelin_access::ownable::OwnableComponent`) + commit-reveal 流程修復：
+
+- **Ownable**：只有 owner 能截止報名、承諾開獎、重置回合。
+- **Commit-reveal with future block hash**：
+  1. 報名階段：任何人都能 `add_participant(name)`，合約鏈上存名單與去重。
+  2. `close_and_commit(blocks_until_entropy)`：owner 承諾一個「未來」區塊 `entropy_block = current + delay`；此時誰也無法知道該區塊的 hash。
+  3. `draw_winner()`：待 `current >= entropy_block + 10`（Starknet 規定的 block hash 可查最小深度），任何人皆可開獎；合約用 `get_block_hash_syscall(entropy_block)` 加上 `round_id`、`participants_count` 過 poseidon hash 求得得獎索引。owner 事先無法預知、呼叫者也無法挑 seed。
+- **Round ID**：重置時把 `round_id + 1`，O(1) 作廢舊名單，避免 gas-heavy 清 map。
+- **事件**：`ParticipantAdded / RegistrationClosed / WinnerDrawn / RoundReset` 讓前端與 explorer 可追蹤。
+- **前端**：`packages/nextjs/app/lottery/page.tsx` 全面改用 `useScaffoldWriteContract` / `useScaffoldReadContract`，名單與得獎者一律由鏈上讀取，瀏覽器無法再干擾結果。
+
+## v2 驗證紀錄
+
+在 Ubuntu 24.04 (WSL2) 上以下版本驗證通過：
+
+- **scarb 2.9.2** (user-space install)
+- **starknet-foundry 0.38.3** — 原 `.tool-versions` 的 0.34.0 因 `snforge_scarb_plugin v0.34.0` 的 transitive deps 在新版 Rust 編不過，改用 0.38.3（插件已修）。`Scarb.toml` 的 `snforge_std` 也一併升到 0.38.3。
+- **Rust 1.90.0** (透過 `RUSTUP_TOOLCHAIN=1.90.0` 環境變數；1.87 版本太舊，1.95 有 ICE bug)
+- **Node.js 18 / Yarn 3.2.3**
+
+**測試結果**：
+
+| 目標 | 指令 | 結果 |
+|---|---|---|
+| Cairo 合約 build | `scarb build` | ✅ |
+| Cairo 單元測試 | `snforge test` | ✅ 9/9 passed |
+| TypeScript 型別 | `yarn next:check-types` | ✅ 0 errors |
+| 前端單元測試 | `vitest run` | ✅ 135/135 passed (10 skipped) |
+
 
   + 佈署合約成功(以sepolia測試網為例)
   
