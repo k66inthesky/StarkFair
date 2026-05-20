@@ -4,6 +4,11 @@ local-devnet
 package-lock.json
 .idea
 
+# local secrets
+.env
+.env.*
+!.env.example
+
 # yarn / eslint
 .yarn/*
 !.yarn/patches
